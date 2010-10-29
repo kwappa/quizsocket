@@ -1,0 +1,110 @@
+<html>
+  <head>
+    <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js'></script>
+    <script src='js/web_socket.js'></script>
+    <script>
+      $(document).ready(function(){
+        $(window).keydown(keydown) ;
+        ws = new WebSocket("ws://quizsocket.vbox.local:4141/");
+        ws.onmessage = dispatch ;
+        ws.onclose = function() { debug("socket closed"); };
+        ws.onopen = function() {
+          debug("connected...");
+          ws.send("hello server");
+          ws.send("hello again");
+        };
+      });
+      function dispatch(evt) {
+          var msg = eval("(" + evt.data + ")") ;
+          switch (msg.command) {
+              case 'debug' :
+                  break ;
+              case 'question' :
+                  $("#msg").empty() ;
+                  var quiz = eval("(" + msg.value + ")") ;
+                  for (i = 0 ; i < 4 ; i ++)
+                  {
+                      $("#ans" + i).empty() ;
+                      $("#ans" + i).css("background-color", "white") ;
+                      if (quiz.answers[i]) {
+                          $("#ans" + i).append("[ " + (i + 1) + " ] ： " + quiz.answers[i]) ;
+                      }
+                  }
+                  $("#question").empty() ;
+                  $("#question").append("ジャンル：" + quiz.genre + "<br />\n" + quiz.question)
+                  break ;
+              case 'name' :
+                  $("#name").append(msg.value) ;
+                  break ;
+              case 'score' :
+                  break ;
+              case 'lock' :
+                  for (i = 0 ; i < 4 ; i ++)
+                  {
+                      $("#ans" + i).css("background-color", "silver") ;
+                  }
+                  break ;
+              case 'right' :
+                  $("#msg").empty() ;
+                  $("#msg").text("正解！") ;
+                  fill_answer(msg.value, "#9999FF") ;
+                  break ;
+              case 'wrong' :
+                  $("#msg").empty() ;
+                  $("#msg").text("不正解…") ;
+                  fill_answer(msg.value, "#FF9999") ;
+                  break ;
+              default :
+
+                  break ;
+          }
+          var msg = eval("(" + evt.data + ")") ;
+      }
+      function fill_answer(num, color)
+      {
+          $("#ans" + num).css("background-color", color) ;
+      }
+
+      function keydown(e)
+      {
+          if (49 <= e.keyCode && e.keyCode <= 52)
+          {
+              ws.send(e.keyCode - 49) ;
+          }
+          if (97 <= e.keyCode && e.keyCode <= 100)
+          {
+              ws.send(e.keyCode - 97) ;
+          }
+      }
+      function debug(msg)
+      {
+          $("#debug").empty() ;
+          $("#debug").text("[" + msg + "]") ;
+      }
+    </script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+  <body>
+    <table align="center" width="75%" border="1">
+      <tr>
+        <td id="name"  class="name">name:</td>
+        <td id="score" class="score"></td>
+      </tr>
+      <tr>
+        <td colspan="2" id="question" style="height:160px;"></td>
+      </tr>
+      <tr>
+        <td id="ans0" class="answer">1:</td>
+        <td id="ans1" class="answer">2:</td>
+      </tr>
+      <tr>
+        <td id="ans2" class="answer">3:</td>
+        <td id="ans3" class="answer">4:</td>
+      </tr>
+      <tr>
+        <td><textarea id="msg"   style="width:100%;" readonly></textarea></td>
+        <td><textarea id="debug" style="width:100%;" readonly></textarea></td>
+      </tr>
+    </table>
+  </body>
+</html>
