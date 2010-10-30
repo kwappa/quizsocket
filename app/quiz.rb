@@ -13,7 +13,7 @@ module QuizSocket
     end
 
     def next_question
-      load_quiz if !@quiz || @quiz.length <= 0
+      load_quiz if !@quiz || @quiz.empty?
       @current_question = questionize @quiz.shift
     end
 
