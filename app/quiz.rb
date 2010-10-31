@@ -111,9 +111,7 @@ module QuizSocket
 
       when STATE[:entry]
         # エントリ受付
-        if @count > 5
-          set_state :question
-        end
+        set_state :question if players > 0
 
       when STATE[:question]
         # 出題
@@ -136,7 +134,8 @@ module QuizSocket
       when STATE[:show_result]
         # 状況表示
         if @count > 20
-          set_state :question
+          puts "players:#{players}"
+          set_state :entry
         end
       end
 

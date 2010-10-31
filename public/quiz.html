@@ -4,17 +4,42 @@
     <script src='http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js'></script>
     <script src='js/web_socket.js'></script>
     <script>
-      $(document).ready(function(){
-        $(window).keydown(keydown) ;
-        ws = new WebSocket("ws://quizsocket.vbox.local:4141/");
-        ws.onmessage = dispatch ;
-        ws.onclose = function() { debug("socket closed"); };
-        ws.onopen = function() {
-          debug("connected...");
-          ws.send("hello server");
-          ws.send("hello again");
-        };
-      });
+      $(document).ready(function() {
+          connected = false ;
+          $("#quit_button").attr("disabled", "true") ;
+      }) ;
+      function connect() {
+          name = $("#player_name").val() ;
+          if (connected) {
+              debug("already connected") ;
+              return ;
+          }
+          if (!name) {
+              debug("name is empty") ;
+              return ;
+          }
+          $(window).keydown(keydown) ;
+          ws = new WebSocket("ws://localhost:4141/");
+          ws.onmessage = dispatch ;
+          ws.onclose = function() {
+              debug("socket closed");
+          } ;
+          ws.onopen  = function() {
+              debug("socket connected");
+              connected = true ;
+              ws.send(name) ;
+              $("#player_name").attr("readonly", "true") ;
+              $("#entry_button").attr("disabled", "true") ;
+              $("#quit_button").attr("disabled", "") ;
+          } ;
+      }
+      function disconnect() {
+          ws.close() ;
+          connected = false ;
+          $("#player_name").attr("readonly", "") ;
+          $("#entry_button").attr("disabled", "") ;
+          $("#quit_button").attr("disabled", "true") ;
+      }
       function dispatch(evt) {
           var msg = eval("(" + evt.data + ")") ;
           switch (msg.command) {
@@ -65,7 +90,6 @@
       {
           $("#ans" + num).css("background-color", color) ;
       }
-
       function keydown(e)
       {
           if (49 <= e.keyCode && e.keyCode <= 52)
@@ -86,10 +110,14 @@
     <link rel="stylesheet" type="text/css" href="css/style.css">
   </head>
   <body>
-    <table align="center" width="75%" border="1">
+    <table align="center" width="80%" border="1">
       <tr>
-        <td id="name"  class="name">name:</td>
-        <td id="score" class="score"></td>
+        <td width="40%"><form onsubmit="return false ;">
+            name:<input type="text"   id="player_name" />
+                 <input type="button" id="entry_button" value="entry" onclick="connect();" />
+                 <input type="button" id="quit_button"  value="quit"  onclick="disconnect();" />
+        </td></form>
+        <td id="score" class="score" width="40%"></td>
       </tr>
       <tr>
         <td colspan="2" id="question" style="height:160px;"></td>
