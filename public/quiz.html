@@ -67,18 +67,20 @@
               case 'lock' :
                   for (i = 0 ; i < 4 ; i ++)
                   {
-                      $("#ans" + i).css("background-color", "silver") ;
+                      var correct_answer = msg.value.correct;
+                      $("#ans" + i).css("background-color", (i == correct_answer ? "#9999FF" : "silver")) ;
                   }
                   break ;
               case 'right' :
                   $("#msg").empty() ;
                   $("#msg").text("正解！") ;
-                  fill_answer(msg.value, "#9999FF") ;
+                  fill_answer(msg.value.answer, "#9999FF") ;
                   break ;
               case 'wrong' :
                   $("#msg").empty() ;
                   $("#msg").text("不正解…") ;
-                  fill_answer(msg.value, "#FF9999") ;
+                  fill_answer(msg.value.answer, "#FF9999") ;
+                  fill_answer(msg.value.correct, "#9999FF") ;
                   break ;
               default :
 

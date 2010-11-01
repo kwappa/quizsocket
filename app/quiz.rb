@@ -17,6 +17,10 @@ module QuizSocket
       @current_question = questionize @quiz.shift
     end
 
+    def correct_answer
+      @current_question[:correct]
+    end
+    
     def correct? answer
       answer.to_i == @current_question[:correct]
     end
@@ -78,9 +82,9 @@ module QuizSocket
       set_state :recieve_answer
       @player.each do |player|
         if player.equal? ws
-          player.send jsonize(num, @question.correct?(num) ? :right : :wrong)
+          player.send jsonize({ :answer => num, :correct => @question.correct_answer }, @question.correct?(num) ? :right : :wrong)
         else
-          player.send jsonize(nil, :lock)
+          player.send jsonize({ :correct => @question.correct_answer }, :lock)
         end
       end
     end
@@ -123,7 +127,7 @@ module QuizSocket
       when STATE[:allow_answer]
         # 解答待ち
         if @count > 50
-          @channel.push_message nil, :lock
+          @channel.push_message({ :correct => @question.correct_answer }, :lock)
           set_state :show_result
         end
 
